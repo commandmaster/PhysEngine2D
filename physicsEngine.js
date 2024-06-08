@@ -390,22 +390,6 @@ class Vec2{
 
     /**
      * 
-     * @param {Vec2} v The vector to lerp towards 
-     * @param {Number} t The interpolation value 
-     * @returns {Vec2} This vector after interpolation 
-     * @memberof Vec2 
-     * @description Linearly interpolate this vector towards another vector 
-     */
-    lerpTowards(v, t){
-        // Linearly interpolate this vector towards another vector
-        this.#x = this.#x + (v.x - this.#x) * t;
-        this.#y = this.#y + (v.y - this.#y) * t;
-
-        return this;
-    }
-
-    /**
-     * 
      * @returns {Vec2} A clone/copy of this vector
      * @memberof Vec2
      * @description Create a clone/copy of this vector
@@ -428,20 +412,6 @@ class Vec2{
         const y = Number(this.#y.toFixed(precision)); // Round the y value to the specified precision
         return {x, y};
     }
-
-    /**
-     * 
-     * @param {Number} [precision=2] The number of decimal places to round the values to 
-     * @returns {Object} The serialized version of this vector
-     * @memberof Vec2
-     * @description Serialize this vector to a object with a a specified number of decimal places for the x and y values
-     */
-    toFixed(precision){
-        // Alias method for serialize
-
-        // Serialize this vector
-        return this.serialize(precision);
-    }   
 
     #calculateMag(){
         // Pythagorean theorem to calculate the magnitude of the vector
@@ -526,11 +496,13 @@ class ConvexCollider{
         this.#calculateWorldPosition(); // Calculate the world position of the collider
         this.#calculateVertices(); // Calculate the vertices of the collider
 
-        this.boundingBox = this.#precomputeBoundingBox(); // Bounding box of the collider
-        //this.boundingBox = new BoundingBox(this.#position, 0, 0); // Bounding box of the collider
+        this.boundingBox = new BoundingBox(this.#position, 0, 0); // Temporary bounding box before it is calculated after the first refresh 
+
         this.refresh(); // Refresh the collider (calculate the world position and vertices
 
         this.type = 'convex'; // Type of the collider
+
+        this.boundingBox = this.#precomputeBoundingBox(); // Bounding box of the collider
     }
 
     addVertex(vertex){
@@ -645,7 +617,7 @@ class ConvexCollider{
         this.rotation = this.rigidBody.rotation; // Set the rotation of the collider to the rotation of the rigidbody
         this.#calculateWorldPosition(); // Calculate the world position of the collider
         this.#calculateVertices(); // Calculate the vertices of the collider
-        
+        //this.boundingBox = this.#precomputeBoundingBox(); // Calculate the bounding box of the collider 
         this.#calculateBoundingBox(); // Calculate the bounding box of the collider
     }
 
@@ -720,7 +692,7 @@ class CircleCollider{
 
 class Rigidbody{
     #velocity = new Vec2(0, 0); // Linear velocity
-    #acceleration = new Vec2(0, 70); // Linear acceleration
+    #acceleration = new Vec2(0, 120); // Linear acceleration
     #angularVelocity = 0; // Angular velocity
     #angularAcceleration = 0; // Angular acceleration
     #angularDrag = 0.001; // Angular drag
@@ -731,7 +703,7 @@ class Rigidbody{
     #bounce = 0.5; // Coefficient of restitution (bounciness) of the rigidbody
     #angularCollisionDamping = 0.1; // Angular collision damping
     #colliders = []; // Colliders attached to the rigidbody
-    #inertiaTensor = 80000; // Inertia tensor of the rigidbody
+    #inertiaTensor = 100000; // Inertia tensor of the rigidbody
     #centerOfMass = new Vec2(0, 0); // Center of mass of the rigidbody
 
     #actingForces = []; // Forces acting on the rigidbody
@@ -1167,6 +1139,8 @@ class SAT{
     // Separating Axis Theorem - Used for collision detection between convex shapes - Theory learned at https://dyn4j.org/2010/01/sat/
     static checkPolyToPoly(collider1, collider2, debug=false){
         // Ignore colliders not in bounds 
+
+        // There is a error with the calculation of the bounding box 
         if (AABB.checkCollision(collider1.boundingBox, collider2.boundingBox) === false) return false; // Return false if there is no overlap
 
 
@@ -1696,3 +1670,5 @@ class PhysicsEngine{
 }
 
 export {PhysicsEngine, Vec2, BoundingBox, CircleCollider, RectangleCollider, TriangleCollider, ConvexCollider, Rigidbody};
+
+
